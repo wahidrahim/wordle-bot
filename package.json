@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc && cp src/words.txt build",
+    "build": "tsc && cp src/util/words.txt build/util",
     "start": "node build/index.js",
     "test": "ts-node src/index.ts",
     "test:cheat": "CHEAT=true npm run test"

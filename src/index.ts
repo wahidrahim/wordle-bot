@@ -37,7 +37,7 @@ async function solve() {
     const evaluation: string[] = await evaluateGuess(tries)
 
     if (evaluation.every((value) => value === 'correct')) {
-      await wait(5000)
+      await wait(10_000)
 
       return {
         word: newWord,
