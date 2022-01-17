@@ -2,123 +2,185 @@ import fs from 'fs'
 import readline from 'readline'
 import path from 'path'
 import puppeteer from 'puppeteer'
+import {
+  visitWordleSite,
+  closeInstructionsModal,
+  solveWithoutTrying,
+  turnOnHardMode,
+  guessNewWord,
+  evaluateGuess,
+  wait,
+} from './puppeteer-actions'
+import { getRandomWord, readWordsFromFile } from './util'
+
+const isCheatMode = process.env.CHEAT || false
 
 async function main() {
-  const browser = await puppeteer.launch({ headless: false })
-  const page = await browser.newPage()
+  // const browser = await puppeteer.launch({ headless: false })
+  // const page = await browser.newPage()
 
-  await page.goto('https://www.powerlanguage.co.uk/wordle/')
+  // await page.goto('https://www.powerlanguage.co.uk/wordle/')
 
   // Close instructions
-  await page.evaluate(() => {
-    const $closeButton = document
-      .querySelector('body > game-app')
-      ?.shadowRoot?.querySelector('#game > game-modal')
-      ?.shadowRoot?.querySelector('div > div > div > game-icon') as HTMLElement
+  // await page.evaluate(() => {
+  //   const $closeButton = document
+  //     .querySelector('body > game-app')
+  //     ?.shadowRoot?.querySelector('#game > game-modal')
+  //     ?.shadowRoot?.querySelector('div > div > div > game-icon') as HTMLElement
 
-    $closeButton.click()
-  })
+  //   $closeButton.click()
+  // })
 
-  if (process.env.CHEAT) {
-    const solution: string = await page.evaluate(() => {
-      const gameState = localStorage.getItem('gameState')
+  await visitWordleSite()
+  await closeInstructionsModal()
 
-      if (gameState) return JSON.parse(gameState).solution
+  if (isCheatMode) return await solveWithoutTrying()
 
-      return ''
-    })
+  // if (process.env.CHEAT) {
+  //   const solution: string = await page.evaluate(() => {
+  //     const gameState = localStorage.getItem('gameState')
 
-    if (solution) {
-      await page.keyboard.type(solution)
-      await page.keyboard.press('Enter')
+  //     if (gameState) return JSON.parse(gameState).solution
 
-      return {
-        word: solution,
-        tries: 1,
-      }
-    }
+  //     return ''
+  //   })
 
-    throw "Couldn't use cheatz"
-  }
+  //   if (solution) {
+  //     await page.keyboard.type(solution)
+  //     await page.keyboard.press('Enter')
 
-  let words: string[] = []
+  //     return {
+  //       word: solution,
+  //       tries: 1,
+  //     }
+  //   }
 
-  const fileStream = fs.createReadStream(path.resolve(__dirname, 'words.txt'))
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity,
-  })
+  //   throw "Couldn't use cheatz"
+  // }
 
-  for await (const line of rl) words.push(line)
+  // let words: string[] = []
 
-  // Turn on "Hard Mode"
-  await page.evaluate(() => {
-    const $settingsButton = document
-      .querySelector('body > game-app')
-      ?.shadowRoot?.querySelector('#settings-button') as HTMLElement
+  let words: string[] = await readWordsFromFile('words.txt')
 
-    $settingsButton.click()
+  // const fileStream = fs.createReadStream(path.resolve(__dirname, 'words.txt'))
+  // const rl = readline.createInterface({
+  //   input: fileStream,
+  //   crlfDelay: Infinity,
+  // })
 
-    const $hardMode = document
-      .querySelector('body > game-app')
-      ?.shadowRoot?.querySelector('#game > game-page > game-settings')
-      ?.shadowRoot?.querySelector('#hard-mode') as HTMLElement
+  // for await (const line of rl) words.push(line)
 
-    $hardMode.click()
+  // // Turn on "Hard Mode"
+  // await page.evaluate(() => {
+  //   const $settingsButton = document
+  //     .querySelector('body > game-app')
+  //     ?.shadowRoot?.querySelector('#settings-button') as HTMLElement
 
-    const $closeButton = document
-      .querySelector('body > game-app')
-      ?.shadowRoot?.querySelector('#game > game-page')
-      ?.shadowRoot?.querySelector(
-        'div > div > header > game-icon'
-      ) as HTMLElement
+  //   $settingsButton.click()
 
-    $closeButton.click()
-  })
+  //   const $hardMode = document
+  //     .querySelector('body > game-app')
+  //     ?.shadowRoot?.querySelector('#game > game-page > game-settings')
+  //     ?.shadowRoot?.querySelector('#hard-mode') as HTMLElement
 
-  const absentLetters: string[] = []
-  const presentLettersIndices: Record<string, number[]> = {}
+  //   $hardMode.click()
+
+  //   const $closeButton = document
+  //     .querySelector('body > game-app')
+  //     ?.shadowRoot?.querySelector('#game > game-page')
+  //     ?.shadowRoot?.querySelector(
+  //       'div > div > header > game-icon'
+  //     ) as HTMLElement
+
+  //   $closeButton.click()
+  // })
+
+  // To make sure wordle-bot is making optimal guesses
+  await turnOnHardMode()
+
+  // const absentLetters: string[] = []
+  // const presentLettersIndices: Record<string, number[]> = {}
+  // const correctLettersIndex: Record<string, number> = {}
+
   const correctLettersIndex: Record<string, number> = {}
+  const presentLettersIndices: Record<string, number[]> = {}
+  const absentLetters: string[] = []
 
-  let inputWord = words[Math.floor(Math.random() * words.length)]
+  // let inputWord = words[Math.floor(Math.random() * words.length)]
+  // let row = 0
+
+  let inputWord = getRandomWord(words)
   let row = 0
+  // for (; row < 6; row++) {
+  //   await page.keyboard.type(inputWord)
+  //   await page.keyboard.press('Enter')
+  for (; row < 6; ++row) {
+    await guessNewWord(inputWord)
 
-  for (; row < 6; row++) {
-    await page.keyboard.type(inputWord)
-    await page.keyboard.press('Enter')
+    //   const evaluation: string[] = await page.evaluate((row) => {
+    //     const $game = document.querySelector('game-app')?.shadowRoot
+    //     const $gameRows = $game?.querySelectorAll('game-row')
 
-    const evaluation: string[] = await page.evaluate((row) => {
-      const $game = document.querySelector('game-app')?.shadowRoot
-      const $gameRows = $game?.querySelectorAll('game-row')
+    //     if (!$gameRows) return
 
-      if (!$gameRows) return
+    //     return ($gameRows[row] as any).evaluation
+    //   }, row)
 
-      return ($gameRows[row] as any).evaluation
-    }, row)
+    const evaluation: string[] = await evaluateGuess(row)
 
-    // Break out of loop once solved
-    if (evaluation.every((value) => value === 'correct')) break
+    //   // Break out of loop once solved
+    //   if (evaluation.every((value) => value === 'correct')) break
+    if (evaluation.every((value) => value === 'correct'))
+      return {
+        word: inputWord,
+        tries: row + 1,
+      }
+
+    //   for (const [index, value] of evaluation.entries()) {
+    //     const letter = inputWord[index]
+
+    //     if (value === 'correct') {
+    //       correctLettersIndex[letter] = index
+    //     } else if (value === 'present') {
+    //       if (
+    //         presentLettersIndices[letter] &&
+    //         !presentLettersIndices[letter].includes(index)
+    //       ) {
+    //         presentLettersIndices[letter].push(index)
+    //       } else {
+    //         presentLettersIndices[letter] = [index]
+    //       }
+    //     } else if (
+    //       value === 'absent' &&
+    //       !(letter in presentLettersIndices) &&
+    //       !(letter in correctLettersIndex)
+    //     ) {
+    //       absentLetters.push(letter)
+    //     }
+    //   }
 
     for (const [index, value] of evaluation.entries()) {
       const letter = inputWord[index]
 
-      if (value === 'correct') {
-        correctLettersIndex[letter] = index
-      } else if (value === 'present') {
-        if (
-          presentLettersIndices[letter] &&
-          !presentLettersIndices[letter].includes(index)
-        ) {
-          presentLettersIndices[letter].push(index)
-        } else {
-          presentLettersIndices[letter] = [index]
-        }
-      } else if (
-        value === 'absent' &&
-        !(letter in presentLettersIndices) &&
-        !(letter in correctLettersIndex)
-      ) {
-        absentLetters.push(letter)
+      switch (value) {
+        case 'correct':
+          correctLettersIndex[letter] = index
+          break
+        case 'present':
+          const isNewIndex =
+            presentLettersIndices[letter] &&
+            !presentLettersIndices[letter].includes(index)
+
+          isNewIndex
+            ? presentLettersIndices[letter].push(index)
+            : (presentLettersIndices[letter] = [index])
+          break
+        case 'absent':
+          const isTotallyAbsent =
+            !(letter in correctLettersIndex) &&
+            !(letter in presentLettersIndices)
+
+          if (isTotallyAbsent) absentLetters.push(letter)
       }
     }
 
@@ -135,9 +197,8 @@ async function main() {
 
     // Remove words that do not have present letters
     words = words.filter((word) => {
-      for (const letter in presentLettersIndices) {
+      for (const letter in presentLettersIndices)
         if (word.indexOf(letter) === -1) return false
-      }
 
       return true
     })
@@ -147,9 +208,8 @@ async function main() {
       for (const letter in presentLettersIndices) {
         const checkedIndices = presentLettersIndices[letter]
 
-        for (const index of checkedIndices) {
+        for (const index of checkedIndices) 
           if (word[index] === letter) return false
-        }
       }
 
       return true
@@ -157,21 +217,20 @@ async function main() {
 
     // Remove words that have absent letters
     words = words.filter((word) => {
-      for (const letter of absentLetters) {
+      for (const letter of absentLetters) 
         if (word.indexOf(letter) !== -1) return false
-      }
 
       return true
     })
 
     inputWord = words[Math.floor(Math.random() * words.length)]
 
-    await page.waitForTimeout(2000)
+    await wait(2000)
   }
 
   return {
     word: inputWord,
-    tries: row,
+    tries: row + 1,
   }
 }
 
