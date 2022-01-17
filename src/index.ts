@@ -1,7 +1,3 @@
-import fs from 'fs'
-import readline from 'readline'
-import path from 'path'
-import puppeteer from 'puppeteer'
 import {
   visitWordleSite,
   closeInstructionsModal,
@@ -10,157 +6,46 @@ import {
   guessNewWord,
   evaluateGuess,
   wait,
-} from './puppeteer-actions'
-import { getRandomWord, readWordsFromFile } from './util'
+} from './actions'
+import { readWordsFromFile, getRandomWord } from './util'
 
 const isCheatMode = process.env.CHEAT || false
+const maximumGuesses = 6
 
-async function main() {
-  // const browser = await puppeteer.launch({ headless: false })
-  // const page = await browser.newPage()
-
-  // await page.goto('https://www.powerlanguage.co.uk/wordle/')
-
-  // Close instructions
-  // await page.evaluate(() => {
-  //   const $closeButton = document
-  //     .querySelector('body > game-app')
-  //     ?.shadowRoot?.querySelector('#game > game-modal')
-  //     ?.shadowRoot?.querySelector('div > div > div > game-icon') as HTMLElement
-
-  //   $closeButton.click()
-  // })
-
+async function solve() {
   await visitWordleSite()
   await closeInstructionsModal()
 
   if (isCheatMode) return await solveWithoutTrying()
 
-  // if (process.env.CHEAT) {
-  //   const solution: string = await page.evaluate(() => {
-  //     const gameState = localStorage.getItem('gameState')
-
-  //     if (gameState) return JSON.parse(gameState).solution
-
-  //     return ''
-  //   })
-
-  //   if (solution) {
-  //     await page.keyboard.type(solution)
-  //     await page.keyboard.press('Enter')
-
-  //     return {
-  //       word: solution,
-  //       tries: 1,
-  //     }
-  //   }
-
-  //   throw "Couldn't use cheatz"
-  // }
-
-  // let words: string[] = []
-
   let words: string[] = await readWordsFromFile('words.txt')
 
-  // const fileStream = fs.createReadStream(path.resolve(__dirname, 'words.txt'))
-  // const rl = readline.createInterface({
-  //   input: fileStream,
-  //   crlfDelay: Infinity,
-  // })
-
-  // for await (const line of rl) words.push(line)
-
-  // // Turn on "Hard Mode"
-  // await page.evaluate(() => {
-  //   const $settingsButton = document
-  //     .querySelector('body > game-app')
-  //     ?.shadowRoot?.querySelector('#settings-button') as HTMLElement
-
-  //   $settingsButton.click()
-
-  //   const $hardMode = document
-  //     .querySelector('body > game-app')
-  //     ?.shadowRoot?.querySelector('#game > game-page > game-settings')
-  //     ?.shadowRoot?.querySelector('#hard-mode') as HTMLElement
-
-  //   $hardMode.click()
-
-  //   const $closeButton = document
-  //     .querySelector('body > game-app')
-  //     ?.shadowRoot?.querySelector('#game > game-page')
-  //     ?.shadowRoot?.querySelector(
-  //       'div > div > header > game-icon'
-  //     ) as HTMLElement
-
-  //   $closeButton.click()
-  // })
-
-  // To make sure wordle-bot is making optimal guesses
+  // Only serves to make sure wordle-bot is making optimal guesses
   await turnOnHardMode()
-
-  // const absentLetters: string[] = []
-  // const presentLettersIndices: Record<string, number[]> = {}
-  // const correctLettersIndex: Record<string, number> = {}
 
   const correctLettersIndex: Record<string, number> = {}
   const presentLettersIndices: Record<string, number[]> = {}
   const absentLetters: string[] = []
 
-  // let inputWord = words[Math.floor(Math.random() * words.length)]
-  // let row = 0
+  for (let tries = 1; tries <= maximumGuesses; ++tries) {
+    let newWord = getRandomWord(words)
 
-  let inputWord = getRandomWord(words)
-  let row = 0
-  // for (; row < 6; row++) {
-  //   await page.keyboard.type(inputWord)
-  //   await page.keyboard.press('Enter')
-  for (; row < 6; ++row) {
-    await guessNewWord(inputWord)
+    await guessNewWord(newWord)
 
-    //   const evaluation: string[] = await page.evaluate((row) => {
-    //     const $game = document.querySelector('game-app')?.shadowRoot
-    //     const $gameRows = $game?.querySelectorAll('game-row')
+    const evaluation: string[] = await evaluateGuess(tries)
 
-    //     if (!$gameRows) return
+    if (evaluation.every((value) => value === 'correct')) {
+      await wait(5000)
 
-    //     return ($gameRows[row] as any).evaluation
-    //   }, row)
-
-    const evaluation: string[] = await evaluateGuess(row)
-
-    //   // Break out of loop once solved
-    //   if (evaluation.every((value) => value === 'correct')) break
-    if (evaluation.every((value) => value === 'correct'))
       return {
-        word: inputWord,
-        tries: row + 1,
+        word: newWord,
+        tries,
       }
+    }
 
-    //   for (const [index, value] of evaluation.entries()) {
-    //     const letter = inputWord[index]
-
-    //     if (value === 'correct') {
-    //       correctLettersIndex[letter] = index
-    //     } else if (value === 'present') {
-    //       if (
-    //         presentLettersIndices[letter] &&
-    //         !presentLettersIndices[letter].includes(index)
-    //       ) {
-    //         presentLettersIndices[letter].push(index)
-    //       } else {
-    //         presentLettersIndices[letter] = [index]
-    //       }
-    //     } else if (
-    //       value === 'absent' &&
-    //       !(letter in presentLettersIndices) &&
-    //       !(letter in correctLettersIndex)
-    //     ) {
-    //       absentLetters.push(letter)
-    //     }
-    //   }
-
+    // Process evaluation in order to shorten list of possible words
     for (const [index, value] of evaluation.entries()) {
-      const letter = inputWord[index]
+      const letter = newWord[index]
 
       switch (value) {
         case 'correct':
@@ -208,7 +93,7 @@ async function main() {
       for (const letter in presentLettersIndices) {
         const checkedIndices = presentLettersIndices[letter]
 
-        for (const index of checkedIndices) 
+        for (const index of checkedIndices)
           if (word[index] === letter) return false
       }
 
@@ -217,26 +102,23 @@ async function main() {
 
     // Remove words that have absent letters
     words = words.filter((word) => {
-      for (const letter of absentLetters) 
+      for (const letter of absentLetters)
         if (word.indexOf(letter) !== -1) return false
 
       return true
     })
 
-    inputWord = words[Math.floor(Math.random() * words.length)]
-
     await wait(2000)
   }
 
-  return {
-    word: inputWord,
-    tries: row + 1,
-  }
+  throw 'Unable to guess word in 6 tries 😬'
 }
 
-main()
+solve()
   .then(({ word, tries }) => {
     console.log('✨', word)
     console.log(`In ${tries} tries`)
+
+    process.exit(0)
   })
   .catch((error) => console.log(error))

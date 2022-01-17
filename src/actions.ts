@@ -41,7 +41,7 @@ export async function solveWithoutTrying() {
     }
   }
 
-  throw 'Not able to find `solution` in localStorage'
+  throw 'Not able to find `solution` in localStorage 🤷'
 }
 
 export async function turnOnHardMode() {
@@ -82,7 +82,7 @@ export async function evaluateGuess(row: number) {
 
     if (!$gameRows) return
 
-    return ($gameRows[row] as any).evaluation
+    return ($gameRows[row - 1] as any).evaluation
   }, row)
 }
 
