@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "ts-node src/index.ts"
+    "test": "ts-node src/index.ts",
+    "test:cheat": "CHEAT=true npm run test"
   },
   "author": "",
   "license": "ISC",

@@ -23,8 +23,6 @@ function getRandomWord() {
 }
 
 async function main() {
-  await getWords(path.resolve(__dirname, 'words.txt'))
-
   const browser = await puppeteer.launch({ headless: false })
   const page = await browser.newPage()
 
@@ -39,6 +37,30 @@ async function main() {
 
     $closeButton.click()
   })
+
+  if (process.env.CHEAT) {
+    const solution: string = await page.evaluate(() => {
+      const gameState = localStorage.getItem('gameState')
+
+      if (gameState) return JSON.parse(gameState).solution
+
+      return ''
+    })
+
+    if (solution) {
+      await page.keyboard.type(solution)
+      await page.keyboard.press('Enter')
+
+      return {
+        word: solution,
+        tries: 1,
+      }
+    }
+
+    throw "Couldn't use cheatz"
+  }
+
+  await getWords(path.resolve(__dirname, 'words.txt'))
 
   // Turn on "Hard Mode"
   await page.evaluate(() => {
