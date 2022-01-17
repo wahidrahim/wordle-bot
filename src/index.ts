@@ -3,25 +3,6 @@ import readline from 'readline'
 import path from 'path'
 import puppeteer from 'puppeteer'
 
-type Evaluation = 'absent' | 'present' | 'correct'
-
-let words: string[] = []
-
-async function getWords(path: fs.PathLike) {
-  const fileStream = fs.createReadStream(path)
-
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity,
-  })
-
-  for await (const line of rl) words.push(line)
-}
-
-function getRandomWord() {
-  return words[Math.floor(Math.random() * words.length)]
-}
-
 async function main() {
   const browser = await puppeteer.launch({ headless: false })
   const page = await browser.newPage()
@@ -60,7 +41,15 @@ async function main() {
     throw "Couldn't use cheatz"
   }
 
-  await getWords(path.resolve(__dirname, 'words.txt'))
+  let words: string[] = []
+
+  const fileStream = fs.createReadStream(path.resolve(__dirname, 'words.txt'))
+  const rl = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity,
+  })
+
+  for await (const line of rl) words.push(line)
 
   // Turn on "Hard Mode"
   await page.evaluate(() => {
@@ -91,7 +80,7 @@ async function main() {
   const presentLettersIndices: Record<string, number[]> = {}
   const correctLettersIndex: Record<string, number> = {}
 
-  let inputWord = getRandomWord()
+  let inputWord = words[Math.floor(Math.random() * words.length)]
   let row = 0
 
   for (; row < 6; row++) {
@@ -113,9 +102,9 @@ async function main() {
     for (const [index, value] of evaluation.entries()) {
       const letter = inputWord[index]
 
-      if ((value as Evaluation) === 'correct') {
+      if (value === 'correct') {
         correctLettersIndex[letter] = index
-      } else if ((value as Evaluation) === 'present') {
+      } else if (value === 'present') {
         if (
           presentLettersIndices[letter] &&
           !presentLettersIndices[letter].includes(index)
@@ -125,7 +114,7 @@ async function main() {
           presentLettersIndices[letter] = [index]
         }
       } else if (
-        (value as Evaluation) === 'absent' &&
+        value === 'absent' &&
         !(letter in presentLettersIndices) &&
         !(letter in correctLettersIndex)
       ) {
@@ -175,7 +164,7 @@ async function main() {
       return true
     })
 
-    inputWord = getRandomWord()
+    inputWord = words[Math.floor(Math.random() * words.length)]
 
     await page.waitForTimeout(2000)
   }
