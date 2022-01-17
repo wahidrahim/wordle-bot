@@ -35,6 +35,8 @@ export async function solveWithoutTrying() {
     await page.keyboard.type(solution)
     await page.keyboard.press('Enter')
 
+    await wait(10_000)
+
     return {
       word: solution,
       tries: 1,
