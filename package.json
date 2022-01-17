@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "build": "tsc && cp src/words.txt build",
+    "start": "node build/index.js",
     "test": "ts-node src/index.ts",
     "test:cheat": "CHEAT=true npm run test"
   },
