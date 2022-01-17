@@ -2144,6 +2144,7 @@ shift
 shine
 shiny
 ships
+shire
 shirt
 shock
 shoes
