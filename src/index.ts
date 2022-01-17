@@ -7,7 +7,7 @@ import {
   evaluateGuess,
   wait,
 } from './actions'
-import { readWordsFromFile, getRandomWord } from './util'
+import { readWordsFromFile, getRandomWord, removeFromArray } from './util'
 
 const isCheatMode = process.env.CHEAT || false
 const maximumGuesses = 6
@@ -28,6 +28,8 @@ async function solve() {
   const absentLetters: string[] = []
 
   for (let tries = 1; tries <= maximumGuesses; ++tries) {
+    if (!words.length) throw 'Out of words 🐞'
+
     let newWord = getRandomWord(words)
 
     await guessNewWord(newWord)
@@ -50,6 +52,9 @@ async function solve() {
       switch (value) {
         case 'correct':
           correctLettersIndex[letter] = index
+
+          if (absentLetters.includes(letter))
+            removeFromArray(absentLetters, letter)
           break
         case 'present':
           const isNewIndex =
@@ -59,6 +64,9 @@ async function solve() {
           isNewIndex
             ? presentLettersIndices[letter].push(index)
             : (presentLettersIndices[letter] = [index])
+
+          if (absentLetters.includes(letter))
+            removeFromArray(absentLetters, letter)
           break
         case 'absent':
           const isTotallyAbsent =

@@ -19,3 +19,9 @@ export async function readWordsFromFile(fileName: string) {
 export function getRandomWord(words: string[]) {
   return words[Math.floor(Math.random() * words.length)]
 }
+
+export function removeFromArray<T>(arr: T[], item: T): T[] {
+  arr.splice(0, arr.length, ...arr.filter((_item) => _item !== item))
+
+  return arr
+}
