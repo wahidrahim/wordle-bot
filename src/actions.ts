@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer'
+import stats from './util/statistics.json'
 import type { Browser, Page } from 'puppeteer'
 
 let browser: Browser
@@ -9,6 +10,12 @@ export async function visitWordleSite() {
   page = await browser.newPage()
 
   await page.goto('https://www.powerlanguage.co.uk/wordle/')
+}
+
+export async function insertPreviousStats() {
+  await page.evaluate((stats) => {
+    localStorage.setItem('statistics', JSON.stringify(stats))
+  }, stats)
 }
 
 export async function closeInstructionsModal() {
@@ -37,12 +44,12 @@ export async function solveWithoutTrying() {
 
     await wait(10_000)
 
-    const statistics = await getStatistics()
+    const stats = await getStatistics()
 
     return {
       word: solution,
       tries: 1,
-      statistics,
+      stats,
     }
   }
 

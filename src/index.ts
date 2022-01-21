@@ -7,6 +7,7 @@ import {
   evaluateGuess,
   wait,
   getStatistics,
+  insertPreviousStats,
 } from './actions'
 import {
   readWordsFromFile,
@@ -24,6 +25,7 @@ const startingWord = 'arose'
 
 async function solve() {
   await visitWordleSite()
+  await insertPreviousStats()
   await closeInstructionsModal()
 
   if (isCheatMode) return await solveWithoutTrying()
@@ -51,12 +53,12 @@ async function solve() {
     if (evaluation.every((value) => value === 'correct')) {
       if (!isDevMode) await wait(10_000)
 
-      const statistics = await getStatistics()
+      const stats = await getStatistics()
 
       return {
         word: newWord,
         tries,
-        statistics,
+        stats,
       }
     }
 
@@ -141,19 +143,20 @@ async function solve() {
 }
 
 solve()
-  .then(({ word, tries, statistics }) => {
+  .then(({ word, tries, stats }) => {
     console.log('✨', word)
     console.log(`In ${tries} tries`)
 
-    if (statistics) {
-      const formattedStatistics = JSON.stringify(
-        JSON.parse(statistics),
+    if (stats) {
+      const formattedStats = JSON.stringify(
+        JSON.parse(stats),
         null,
         2
       )
 
-      saveStatistics(formattedStatistics)
-      console.log(JSON.parse(statistics))
+      saveStatistics(formattedStats)
+
+      console.log(JSON.parse(stats))
     }
 
     if (!isDevMode) process.exit(0)
