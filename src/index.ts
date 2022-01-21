@@ -94,27 +94,22 @@ async function solve() {
       }
     }
 
-    // Remove words without correctly placed letters
     words = words.filter((word) => {
+      // Remove the guessed word form
+      if (word === newWord) return false
+
+      // Remove words without correctly placed letters
       for (const letter in correctLettersIndex) {
         const index = correctLettersIndex[letter]
 
         if (word[index] !== letter) return false
       }
 
-      return true
-    })
-
-    // Remove words that do not have present letters
-    words = words.filter((word) => {
+      // Remove words that do not have present letters
       for (const letter in presentLettersIndices)
         if (word.indexOf(letter) === -1) return false
 
-      return true
-    })
-
-    // Remove words that have present letters in the incorrect place
-    words = words.filter((word) => {
+      // Remove words that have present letters in the incorrect place
       for (const letter in presentLettersIndices) {
         const checkedIndices = presentLettersIndices[letter]
 
@@ -122,19 +117,12 @@ async function solve() {
           if (word[index] === letter) return false
       }
 
-      return true
-    })
-
-    // Remove words that have absent letters
-    words = words.filter((word) => {
+      // Remove words that have absent letters
       for (const letter of absentLetters)
         if (word.indexOf(letter) !== -1) return false
 
       return true
     })
-
-    // Remove the guessed word form
-    words = words.filter((word) => word !== newWord)
 
     await wait(2000)
   }
