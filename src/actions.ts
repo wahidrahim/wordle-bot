@@ -1,5 +1,4 @@
 import puppeteer from 'puppeteer'
-import stats from './util/statistics.json'
 import type { Browser, Page } from 'puppeteer'
 
 let browser: Browser
@@ -13,9 +12,15 @@ export async function visitWordleSite() {
 }
 
 export async function insertPreviousStats() {
-  await page.evaluate((stats) => {
-    localStorage.setItem('statistics', JSON.stringify(stats))
-  }, stats)
+  try {
+    const stats = require('./util/statistics.json')
+
+    await page.evaluate((stats) => {
+      localStorage.setItem('statistics', JSON.stringify(stats))
+    }, stats)
+  } catch (error) {
+    console.log('No previous statistics found')
+  }
 }
 
 export async function closeInstructionsModal() {

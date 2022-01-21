@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc && cp src/util/words.txt build/util",
     "start": "node build/index.js",
-    "dev": "NODE_ENV=development ts-node src/index.ts"
+    "dev": "NODE_ENV=development ts-node src/index.ts",
+    "reset-stats": "rm src/util/statistics.json"
   },
   "author": "",
   "license": "ISC",
