@@ -37,9 +37,12 @@ export async function solveWithoutTrying() {
 
     await wait(10_000)
 
+    const statistics = await getStatistics()
+
     return {
       word: solution,
       tries: 1,
+      statistics,
     }
   }
 
@@ -86,6 +89,10 @@ export async function evaluateGuess(row: number) {
 
     return ($gameRows[row - 1] as any).evaluation
   }, row)
+}
+
+export async function getStatistics() {
+  return await page.evaluate((statistics) => localStorage.getItem('statistics'))
 }
 
 export async function wait(milliseconds: number) {

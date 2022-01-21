@@ -16,6 +16,10 @@ export async function readWordsFromFile(fileName: string) {
   return words
 }
 
+export function saveStatistics(statistics: any) {
+  fs.writeFileSync(path.resolve(__dirname, 'statistics.json'), statistics)
+}
+
 export function getRandomWord(words: string[]) {
   return words[Math.floor(Math.random() * words.length)]
 }

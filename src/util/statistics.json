@@ -1,0 +1,17 @@
+{
+  "currentStreak": 1,
+  "maxStreak": 1,
+  "guesses": {
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 1,
+    "fail": 0
+  },
+  "winPercentage": 100,
+  "gamesPlayed": 1,
+  "gamesWon": 1,
+  "averageGuesses": 6
+}

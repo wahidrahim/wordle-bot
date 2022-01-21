@@ -6,8 +6,14 @@ import {
   guessNewWord,
   evaluateGuess,
   wait,
+  getStatistics,
 } from './actions'
-import { readWordsFromFile, getRandomWord, removeFromArray } from './util'
+import {
+  readWordsFromFile,
+  getRandomWord,
+  removeFromArray,
+  saveStatistics,
+} from './util'
 
 const isDevMode = process.env.NODE_ENV === 'development'
 const isCheatMode = process.env.CHEAT === 'true'
@@ -43,11 +49,14 @@ async function solve() {
     const evaluation: string[] = await evaluateGuess(tries)
 
     if (evaluation.every((value) => value === 'correct')) {
-      await wait(10_000)
+      if (!isDevMode) await wait(10_000)
+
+      const statistics = await getStatistics()
 
       return {
         word: newWord,
         tries,
+        statistics,
       }
     }
 
@@ -132,9 +141,20 @@ async function solve() {
 }
 
 solve()
-  .then(({ word, tries }) => {
+  .then(({ word, tries, statistics }) => {
     console.log('✨', word)
     console.log(`In ${tries} tries`)
+
+    if (statistics) {
+      const formattedStatistics = JSON.stringify(
+        JSON.parse(statistics),
+        null,
+        2
+      )
+
+      saveStatistics(formattedStatistics)
+      console.log(JSON.parse(statistics))
+    }
 
     if (!isDevMode) process.exit(0)
   })
