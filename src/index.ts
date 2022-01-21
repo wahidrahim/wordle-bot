@@ -122,6 +122,9 @@ async function solve() {
       return true
     })
 
+    // Remove the guessed word form
+    words = words.filter((word) => word !== newWord)
+
     await wait(2000)
   }
 
