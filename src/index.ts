@@ -15,13 +15,13 @@ import {
   removeFromArray,
   saveStatistics,
 } from './util'
+import {
+  isDevMode,
+  isCheatMode,
+  maximumGuesses,
+  startingWord,
+} from './util/constants'
 
-const isDevMode = process.env.NODE_ENV === 'development'
-const isCheatMode = process.env.CHEAT === 'true'
-const maximumGuesses = 6
-
-// "AROSE" has all the most common letters from the 5-letter word list
-const startingWord = 'arose'
 
 async function solve() {
   await visitWordleSite()
