@@ -9,8 +9,12 @@ import {
 } from './actions'
 import { readWordsFromFile, getRandomWord, removeFromArray } from './util'
 
-const isCheatMode = process.env.CHEAT || false
+const isDevMode = process.env.NODE_ENV === 'development'
+const isCheatMode = process.env.CHEAT === 'true'
 const maximumGuesses = 6
+
+// "AROSE" has all the most common letters from the 5-letter word list
+const startingWord = 'arose'
 
 async function solve() {
   await visitWordleSite()
@@ -30,7 +34,9 @@ async function solve() {
   for (let tries = 1; tries <= maximumGuesses; ++tries) {
     if (!words.length) throw 'Out of words 🐞'
 
-    let newWord = getRandomWord(words)
+    if (isDevMode) console.log(words)
+
+    let newWord = tries === 1 ? startingWord : getRandomWord(words)
 
     await guessNewWord(newWord)
 
@@ -127,6 +133,6 @@ solve()
     console.log('✨', word)
     console.log(`In ${tries} tries`)
 
-    process.exit(0)
+    if (!isDevMode) process.exit(0)
   })
   .catch((error) => console.log(error))
