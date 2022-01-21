@@ -11,7 +11,7 @@ export async function visitWordleSite() {
   await page.goto('https://www.powerlanguage.co.uk/wordle/')
 }
 
-export async function insertPreviousStats() {
+export async function setPreviousStats() {
   try {
     const stats = require('./util/statistics.json')
 

@@ -7,7 +7,7 @@ import {
   evaluateGuess,
   wait,
   getStatistics,
-  insertPreviousStats,
+  setPreviousStats,
 } from './actions'
 import {
   readWordsFromFile,
@@ -22,10 +22,9 @@ import {
   startingWord,
 } from './util/constants'
 
-
 async function solve() {
   await visitWordleSite()
-  await insertPreviousStats()
+  await setPreviousStats()
   await closeInstructionsModal()
 
   if (isCheatMode) return await solveWithoutTrying()
