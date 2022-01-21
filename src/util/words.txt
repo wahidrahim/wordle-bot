@@ -1990,6 +1990,7 @@ pound
 power
 press
 price
+prick
 pride
 prime
 print
