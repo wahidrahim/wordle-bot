@@ -1740,6 +1740,7 @@ kings
 knees
 knife
 knock
+knoll
 knots
 known
 knows
