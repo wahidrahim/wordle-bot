@@ -2452,6 +2452,7 @@ weigh
 weird
 wells
 welsh
+whack
 whale
 wheat
 wheel
