@@ -8,6 +8,7 @@ import {
   wait,
   getStatistics,
   setPreviousStats,
+  clearGuessedWord,
 } from './actions'
 import {
   readWordsFromFile,
@@ -43,11 +44,25 @@ async function solve() {
 
     if (isDevMode) console.log(words)
 
-    let newWord = tries === 1 ? startingWord : getRandomWord(words)
+    let newWord: string
+    let evaluation: string[]
+    let isNotInWordList = false
 
-    await guessNewWord(newWord)
+    // Keep guessing new words if they are not in the Wordle word list
+    do {
+      newWord = tries === 1 ? startingWord : getRandomWord(words)
 
-    const evaluation: string[] = await evaluateGuess(tries)
+      await guessNewWord(newWord)
+
+      evaluation = await evaluateGuess(tries)
+
+      isNotInWordList = evaluation.length === 0
+
+      // TODO: remove word entirely from the static word list
+      if (isNotInWordList) words = words.filter((word) => word !== newWord)
+
+      await clearGuessedWord()
+    } while (isNotInWordList)
 
     if (evaluation.every((value) => value === 'correct')) {
       if (!isDevMode) await wait(10_000)
@@ -135,11 +150,7 @@ solve()
     console.log(`In ${tries} tries`)
 
     if (stats) {
-      const formattedStats = JSON.stringify(
-        JSON.parse(stats),
-        null,
-        2
-      )
+      const formattedStats = JSON.stringify(JSON.parse(stats), null, 2)
 
       saveStatistics(formattedStats)
 

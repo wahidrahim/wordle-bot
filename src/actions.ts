@@ -92,6 +92,10 @@ export async function guessNewWord(word: string) {
   await page.keyboard.press('Enter')
 }
 
+export async function clearGuessedWord() {
+  for (const _ of Array(5)) await page.keyboard.press('Backspace')
+}
+
 export async function evaluateGuess(row: number) {
   return await page.evaluate((row) => {
     const $game = document.querySelector('game-app')?.shadowRoot
