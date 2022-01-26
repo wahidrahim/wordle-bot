@@ -13,7 +13,7 @@ export async function visitWordleSite() {
 
 export async function setPreviousStats() {
   try {
-    const stats = require('./util/statistics.json')
+    const stats = require('./static/statistics.json')
 
     await page.evaluate((stats) => {
       localStorage.setItem('statistics', JSON.stringify(stats))

@@ -5,7 +5,9 @@ import path from 'path'
 export async function readWordsFromFile(fileName: string) {
   const words: string[] = []
 
-  const fileStream = fs.createReadStream(path.resolve(__dirname, fileName))
+  const fileStream = fs.createReadStream(
+    path.resolve(__dirname, '../static/words.txt')
+  )
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity,
@@ -17,7 +19,10 @@ export async function readWordsFromFile(fileName: string) {
 }
 
 export function saveStatistics(statistics: any) {
-  fs.writeFileSync(path.resolve(__dirname, 'statistics.json'), statistics)
+  fs.writeFileSync(
+    path.resolve(__dirname, '../static/statistics.json'),
+    statistics
+  )
 }
 
 export function getRandomWord(words: string[]) {

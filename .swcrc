@@ -8,6 +8,5 @@
   "module": {
     "type": "umd"
   },
-  "sourceMaps": true,
-  "exclude": ["src/util/_common-letter-words.ts"]
+  "sourceMaps": true
 }

@@ -1,4 +1,4 @@
-import { readWordsFromFile } from '.'
+import { readWordsFromFile } from './src/util'
 
 async function bestWords() {
   const words = await readWordsFromFile('words.txt')
