@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "swc src/ -d build/ -D",
-    "start": "node build/index.js",
-    "dev": "NODE_ENV=development ts-node src/index.ts",
-    "reset-stats": "rm src/util/statistics.json"
+    "build": "rm -rf build/ && swc src/ -d build/ -D",
+    "start": "node build/",
+    "dev": "npm run build -- -w",
+    "reset-stats": "rm src/static/statistics.json"
   },
   "author": "",
   "license": "ISC",
