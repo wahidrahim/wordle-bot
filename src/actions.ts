@@ -58,7 +58,7 @@ export async function solveWithoutTrying() {
     }
   }
 
-  throw 'Not able to find `solution` in localStorage 🤷'
+  throw new Error('Not able to find `solution` in localStorage 🤷')
 }
 
 export async function turnOnHardMode() {

@@ -40,7 +40,7 @@ async function solve() {
   const absentLetters: string[] = []
 
   for (let tries = 1; tries <= maximumGuesses; ++tries) {
-    if (!words.length) throw 'Out of words 🐞'
+    if (!words.length) throw new Error('Out of words 🐞')
 
     if (isDevMode) console.log(words)
 
@@ -141,7 +141,7 @@ async function solve() {
     await wait(2000)
   }
 
-  throw 'Unable to guess word in 6 tries 😬'
+  throw new Error('Unable to guess word in 6 tries 😬')
 }
 
 solve()
