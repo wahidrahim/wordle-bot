@@ -94,7 +94,7 @@ async function solve() {
     }
 
     words = words.filter((word) => {
-      // Remove the guessed word form
+      // Remove the guessed word from list
       if (word === newWord) return false
 
       // Remove words without correctly placed letters
